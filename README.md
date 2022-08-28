@@ -20,10 +20,10 @@ Add React Leaflet Geoman
 
 ```sh
   // npm
-  npm i react-leaflet-geoman
+  npm i react-leaflet-geoman-v2
 
   // yarn
-  yarn add react-leaflet-geoman
+  yarn add react-leaflet-geoman-v2
 ```
 
 ## Usage
