@@ -1,6 +1,6 @@
 {
   "name": "react-leaflet-geoman-v2",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React wrapper for the leaflet-geoman plugin",
   "repository": "https://github.com/TurtIeSocks/react-leaflet-geoman",
   "author": "TurtIeSocks <58572875+TurtIeSocks@users.noreply.github.com>",
@@ -16,6 +16,9 @@
     "build": "vite build",
     "build:ts": "tsc --project tsconfig.build.json"
   },
+  "dependencies": {
+    "use-deep-compare-effect": "^1.8.1"
+  },
   "devDependencies": {
     "@geoman-io/leaflet-geoman-free": "^2.13.0",
     "@rollup/plugin-typescript": "^8.4.0",
@@ -30,7 +33,6 @@
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.0.2",
     "typescript": "^4.6.3",
-    "use-deep-compare-effect": "^1.8.1",
     "vite": "^3.0.8",
     "vite-plugin-checker": "^0.4.9"
   },
