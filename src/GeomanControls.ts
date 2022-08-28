@@ -20,6 +20,9 @@ export default function GeomanControls({
   ...handlers
 }: GeomanProps): null {
   const [mounted, setMounted] = useState(false)
+  const [handlersRef, setHandlersRef] = useState<Record<string, Function>>(
+    process.env.NODE_ENV === 'development' ? handlers : {}
+  )
   const { map, layerContainer } = useLeafletContext()
   const container = (layerContainer as LayerGroup) || map
 
@@ -61,8 +64,14 @@ export default function GeomanControls({
       globalEvents(map, withDebug, 'off')
       mapEvents(map, withDebug, 'off')
       layers.forEach((layer) => layerEvents(layer, withDebug, 'off'))
+      if (process.env.NODE_ENV === 'development') setHandlersRef(handlers)
     }
-  }, [mounted, Object.values(handlers).every((h) => !h)])
+  }, [
+    mounted,
+    process.env.NODE_ENV === 'development'
+      ? Object.entries(handlers).every(([k, fn]) => handlersRef[k] === fn)
+      : true,
+  ])
 
   return null
 }
