@@ -1,6 +1,6 @@
 {
   "name": "react-leaflet-geoman-v2",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "React wrapper for the leaflet-geoman plugin",
   "repository": "https://github.com/TurtIeSocks/react-leaflet-geoman",
   "author": "TurtIeSocks <58572875+TurtIeSocks@users.noreply.github.com>",

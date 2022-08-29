@@ -77,6 +77,8 @@ export default function Geoman({ geojson, setGeojson }: Props) {
           continueDrawing: true,
           editable: false,
         }}
+        // onMount={() => L.PM.setOptIn(true)}
+        // onUnmount={() => L.PM.setOptIn(false)}
         eventDebugFn={console.log}
         onCreate={handleChange}
         onChange={handleChange}

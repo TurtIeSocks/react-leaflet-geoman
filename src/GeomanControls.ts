@@ -17,6 +17,8 @@ export default function GeomanControls({
   pathOptions = {},
   lang = 'en',
   eventDebugFn,
+  onMount,
+  onUnmount,
   ...handlers
 }: GeomanProps): null {
   const [mounted, setMounted] = useState(false)
@@ -40,10 +42,12 @@ export default function GeomanControls({
         ...globalOptions,
       })
       map.pm.setLang(lang)
+      if (onMount) onMount()
       setMounted(true)
     }
     return () => {
       map.pm.removeControls()
+      if (onUnmount) onUnmount()
       setMounted(false)
     }
   }, [options, globalOptions, pathOptions, lang, !map])

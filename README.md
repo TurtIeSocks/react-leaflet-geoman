@@ -86,6 +86,8 @@ interface GeomanProps extends GeomanHandlers {
   pathOptions?: L.PathOptions // See Leaflet PathOptions link above
   eventDebugFn?: EventDebugFn // optional function that can be used to debug events, such as `console.log`
   lang?: string // See lang options link above
+  onMount?: () => void // callback that runs after it mounts to the DOM
+  onUnmount?: () => void // callback that runs after it unmounts
 }
 ```
 
