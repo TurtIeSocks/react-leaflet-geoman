@@ -86,6 +86,8 @@ export interface GeomanProps extends GeomanHandlers {
   globalOptions?: PM.GlobalOptions
   pathOptions?: PathOptions
   eventDebugFn?: EventDebugFn
+  onMount?: () => void
+  onUnmount?: () => void
   lang?:
     | 'cz'
     | 'da'
