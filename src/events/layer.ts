@@ -2,7 +2,7 @@ import type { Layer } from 'leaflet'
 
 import type { HandlersWithDebug, Method } from '../types'
 
-export default function layerEvents(
+export function layerEvents(
   layer: Layer,
   handlers: HandlersWithDebug,
   method: Method

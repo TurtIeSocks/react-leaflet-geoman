@@ -6,10 +6,7 @@ import type { LayerGroup } from 'leaflet'
 import useDeepCompareEffect from 'use-deep-compare-effect'
 
 import type { GeomanProps } from './types'
-import reference from './events/reference'
-import layerEvents from './events/layer'
-import globalEvents from './events/global'
-import mapEvents from './events/map'
+import { reference, layerEvents, globalEvents, mapEvents } from './events'
 
 export default function GeomanControls({
   options = {},

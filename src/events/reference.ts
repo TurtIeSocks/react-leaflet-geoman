@@ -1,6 +1,6 @@
 import type { GeomanHandlers } from '../types'
 
-export default [
+export const reference = [
   'onMapRemove',
   'onLayerRemove',
   'onMapCut',

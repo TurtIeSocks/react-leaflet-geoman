@@ -2,7 +2,7 @@ import type { Map } from 'leaflet'
 
 import type { HandlersWithDebug, Method } from '../types'
 
-export default function globalEvents(
+export function globalEvents(
   map: Map,
   handlers: HandlersWithDebug,
   method: Method
