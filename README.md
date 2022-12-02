@@ -76,7 +76,7 @@ Respects all of the options, global options, and event handlers from Leaflet Geo
 - [Options](https://github.com/geoman-io/leaflet-geoman/blob/0fabb8c2bfe0d40d1d9d6a827912bd53d8f6ad3b/leaflet-geoman.d.ts#L1083)
 - [Global Options](https://github.com/geoman-io/leaflet-geoman/blob/0fabb8c2bfe0d40d1d9d6a827912bd53d8f6ad3b/leaflet-geoman.d.ts#L748)
 - [Path Options](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/3b442d0c53fe1de99bcaf2b82fae33c22c42a052/types/leaflet/index.d.ts#L1000)
-- [Lang Options](https://github.com/geoman-io/leaflet-geoman/blob/0fabb8c2bfe0d40d1d9d6a827912bd53d8f6ad3b/leaflet-geoman.d.ts#L526)
+- [Lang Options](https://github.com/geoman-io/leaflet-geoman/blob/3458b8541dc283fa5404dbb3e6558bdee4a32874/leaflet-geoman.d.ts#L488)
 
 ```ts
 // Additional Props
@@ -85,7 +85,7 @@ interface GeomanProps extends GeomanHandlers {
   globalOptions?: PM.GlobalOptions // See global options link above
   pathOptions?: L.PathOptions // See Leaflet PathOptions link above
   eventDebugFn?: EventDebugFn // optional function that can be used to debug events, such as `console.log`
-  lang?: string // See lang options link above
+  lang?: PM.SupportLocales // See lang options link above
   onMount?: () => void // callback that runs after it mounts to the DOM
   onUnmount?: () => void // callback that runs after it unmounts
 }

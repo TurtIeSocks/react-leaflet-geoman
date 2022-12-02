@@ -1,18 +1,5 @@
 import type { PM, PathOptions } from 'leaflet'
 
-declare module 'leaflet' {
-  namespace PM {
-    interface PMMap {
-      // PR https://github.com/geoman-io/leaflet-geoman/pull/1215
-      getGeomanLayers(asFeatureGroup: true): FeatureGroup
-      getGeomanLayers(asFeatureGroup?: false): Layer[]
-
-      getGeomanDrawLayers(asFeatureGroup: true): FeatureGroup
-      getGeomanDrawLayers(asFeatureGroup?: false): Layer[]
-    }
-  }
-}
-
 export type Method = 'on' | 'off'
 
 export type EventDebugFn = (input?: any) => void
@@ -88,27 +75,5 @@ export interface GeomanProps extends GeomanHandlers {
   eventDebugFn?: EventDebugFn
   onMount?: () => void
   onUnmount?: () => void
-  lang?:
-    | 'cz'
-    | 'da'
-    | 'de'
-    | 'el'
-    | 'en'
-    | 'es'
-    | 'fa'
-    | 'fr'
-    | 'hu'
-    | 'id'
-    | 'it'
-    | 'nl'
-    | 'no'
-    | 'pl'
-    | 'pt_br'
-    | 'ro'
-    | 'ru'
-    | 'sv'
-    | 'tr'
-    | 'ua'
-    | 'zh'
-    | 'zh_tw'
+  lang?: PM.SupportLocales
 }
