@@ -19,13 +19,9 @@ export default function App() {
           <GeomanWrapper geojson={geojson} setGeojson={setGeojson} />
         </MapContainer>
       </div>
-      <div style={{ width: '33%', textAlign: 'center', overflow: 'auto' }}>
+      <div style={{ width: '33%', overflow: 'auto', padding: '0 20px' }}>
         <h3>{geojson.features.length} Features</h3>
-        <ul>
-          {geojson.features.map((feature, i) => (
-            <li key={i}>{JSON.stringify(feature, null, 2)}</li>
-          ))}
-        </ul>
+        <pre>{JSON.stringify(geojson, null, 2)}</pre>
       </div>
     </div>
   )

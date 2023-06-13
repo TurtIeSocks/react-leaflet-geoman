@@ -252,10 +252,10 @@
   resolved "https://registry.yarnpkg.com/@esbuild/linux-loong64/-/linux-loong64-0.14.54.tgz#de2a4be678bd4d0d1ffbb86e6de779cde5999028"
   integrity sha512-bZBrLAIX1kpWelV0XemxBZllyRmM6vgFQQG2GdNb+r3Fkp0FOh1NJSvekXDs7jq70k4euu1cryLMfU+mTXlEpw==
 
-"@geoman-io/leaflet-geoman-free@^2.13.1":
-  version "2.13.1"
-  resolved "https://registry.yarnpkg.com/@geoman-io/leaflet-geoman-free/-/leaflet-geoman-free-2.13.1.tgz#a968810bc1b7c4fae9fe6f7a99e0015c9aeaaeef"
-  integrity sha512-csTmg0JJegXRfwGpNXQ9wy1Y1wha8AcrxhvaVFGm3xrhpPG8l3wouMZvO91PN8ZthG3xpZtfDnUQF+7Pm4mwXQ==
+"@geoman-io/leaflet-geoman-free@^2.14.2":
+  version "2.14.2"
+  resolved "https://registry.yarnpkg.com/@geoman-io/leaflet-geoman-free/-/leaflet-geoman-free-2.14.2.tgz#c84c2115c263f34d11dc0b43859551639fe3d56b"
+  integrity sha512-6lIyG8RvSVdFjVjiQgBPyNASjymSyqzsiUeBW0pA+q41lB5fAg4SDC6SfJvWdEyDHa81Jb5FWjUkCc9O+u0gbg==
   dependencies:
     "@turf/boolean-contains" "^6.5.0"
     "@turf/kinks" "^6.5.0"
