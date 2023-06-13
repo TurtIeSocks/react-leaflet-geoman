@@ -30,8 +30,13 @@ Add React Leaflet Geoman
 
 Since this package modifies the DOM directly, it can be imported either as hook or a component. At a minimum, it must be initiated inside of a `MapContainer` component. You can either draw shapes directly to the map container or wrap it in a `FeatureGroup` component. See the [Example](/example) code for a more detailed usage example.
 
+## V2 Breaking Changes
+
+This component wrapper no longer imports the Leaflet Geoman CSS file. You must import it yourself, this is for compatibility reasons for different frameworks.
+
 ```tsx
 // as a React component
+import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
 import { GeomanControls } from 'react-leaflet-geoman-v2'
 
 export default function Drawing() {
@@ -57,6 +62,7 @@ export default function Drawing() {
 }
 
 // as a hook
+import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
 import { useGeomanControls } from 'react-leaflet-geoman-v2'
 
 export default function Drawing() {

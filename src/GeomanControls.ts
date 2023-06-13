@@ -1,6 +1,5 @@
 import '@geoman-io/leaflet-geoman-free'
-import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useEffect, useState } from 'react'
 import { useLeafletContext } from '@react-leaflet/core'
 import type { LayerGroup } from 'leaflet'
 import useDeepCompareEffect from 'use-deep-compare-effect'
@@ -30,42 +29,64 @@ export default function GeomanControls({
     return null
   }
 
-  useDeepCompareEffect(() => {
+  useLayoutEffect(() => {
+    // add controls
     if (!map.pm.controlsVisible()) {
       map.pm.addControls(options)
-      map.pm.setPathOptions(pathOptions)
-      map.pm.setGlobalOptions({
-        layerGroup: container,
-        ...globalOptions,
-      })
-      map.pm.setLang(lang)
       if (onMount) onMount()
       setMounted(true)
     }
     return () => {
-      map.pm.removeControls()
+      map.pm.disableDraw()
+      map.pm.disableGlobalEditMode()
+      map.pm.disableGlobalRemovalMode()
+      map.pm.disableGlobalDragMode()
+      map.pm.disableGlobalCutMode()
+      map.pm.disableGlobalRotateMode()
+      map.pm.disableGlobalDragMode()
+      map.pm.disableGlobalCutMode()
       if (onUnmount) onUnmount()
+      map.pm.removeControls()
       setMounted(false)
     }
-  }, [options, globalOptions, pathOptions, lang, !map])
+  }, [])
 
   useEffect(() => {
-    const withDebug = Object.fromEntries(
-      reference.map((handler) => [handler, handlers[handler] ?? eventDebugFn])
-    )
-    const layers = layerContainer
-      ? container.getLayers()
-      : map.pm.getGeomanLayers()
+    // set path options
+    if (mounted) map.pm.setPathOptions(pathOptions)
+  }, [pathOptions, mounted])
+
+  useDeepCompareEffect(() => {
+    // set global options
+    if (mounted)
+      map.pm.setGlobalOptions({ layerGroup: container, ...globalOptions })
+  }, [globalOptions, mounted])
+
+  useEffect(() => {
+    // set language
+    if (mounted) map.pm.setLang(lang)
+  }, [lang, mounted])
+
+  useEffect(() => {
+    // attach and remove event handlers
     if (mounted) {
+      const withDebug = Object.fromEntries(
+        reference.map((handler) => [handler, handlers[handler] ?? eventDebugFn])
+      )
+      const layers = layerContainer
+        ? container.getLayers()
+        : map.pm.getGeomanLayers()
+      layers.forEach((layer) => layerEvents(layer, withDebug, 'on'))
+
       globalEvents(map, withDebug, 'on')
       mapEvents(map, withDebug, 'on')
-      layers.forEach((layer) => layerEvents(layer, withDebug, 'on'))
-    }
-    return () => {
-      globalEvents(map, withDebug, 'off')
-      mapEvents(map, withDebug, 'off')
-      layers.forEach((layer) => layerEvents(layer, withDebug, 'off'))
-      if (process.env.NODE_ENV === 'development') setHandlersRef(handlers)
+
+      return () => {
+        globalEvents(map, withDebug, 'off')
+        mapEvents(map, withDebug, 'off')
+        layers.forEach((layer) => layerEvents(layer, withDebug, 'off'))
+        setHandlersRef(handlers)
+      }
     }
   }, [
     mounted,
