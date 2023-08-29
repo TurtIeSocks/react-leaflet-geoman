@@ -2,7 +2,6 @@ import '@geoman-io/leaflet-geoman-free'
 import { useLayoutEffect, useEffect, useState } from 'react'
 import { useLeafletContext } from '@react-leaflet/core'
 import type { LayerGroup } from 'leaflet'
-import useDeepCompareEffect from 'use-deep-compare-effect'
 
 import type { GeomanProps } from './types'
 import { reference, layerEvents, globalEvents, mapEvents } from './events'
@@ -56,7 +55,7 @@ export default function GeomanControls({
     if (mounted) map.pm.setPathOptions(pathOptions)
   }, [pathOptions, mounted])
 
-  useDeepCompareEffect(() => {
+  useEffect(() => {
     // set global options
     if (mounted)
       map.pm.setGlobalOptions({ layerGroup: container, ...globalOptions })
