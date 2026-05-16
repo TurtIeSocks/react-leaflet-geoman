@@ -1,4 +1,5 @@
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
+import * as React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock @geoman-io/leaflet-geoman-free (side-effect import, no exports needed)
@@ -165,6 +166,59 @@ describe('GeomanControls', () => {
     (map as { pm: unknown }).pm = undefined;
 
     expect(() => unmount()).not.toThrow();
+  });
+
+  it('fires onCreate exactly once per draw even when the handler updates state (regression for #13)', () => {
+    // Issue #13: onCreate fired multiple times after the first shape was drawn
+    // because the parent's setState (from inside onCreate) caused a re-render,
+    // which re-registered the pm:create wrapper, leaving the previous one
+    // attached to the map. Each subsequent draw fired every accumulated
+    // wrapper. The ref-callback proxy fixes this by registering exactly one
+    // map.on('pm:create', ...) at setup and never re-registering.
+
+    // Wrapper component that triggers a re-render every time onCreate fires,
+    // mimicking the user's setGeojson pattern from the issue.
+    function Wrapper() {
+      const [count, setCount] = React.useState(0);
+      return (
+        <>
+          <span data-testid="count">{count}</span>
+          <GeomanControls onCreate={() => setCount((c) => c + 1)} />
+        </>
+      );
+    }
+
+    const { getByTestId } = render(<Wrapper />);
+
+    // Map.on('pm:create', ...) should have been called exactly once at setup.
+    const pmCreateCalls = (map.on as ReturnType<typeof vi.fn>).mock.calls.filter(
+      ([eventName]) => eventName === 'pm:create'
+    );
+    expect(pmCreateCalls).toHaveLength(1);
+
+    const fireCreate = pmCreateCalls[0][1] as (e: unknown) => void;
+
+    // Simulate three sequential draws. Each one runs setState, which causes
+    // a render. The proxy must NOT register a second wrapper. Wrap in act()
+    // so the synchronous setState calls are flushed before assertions.
+    act(() => {
+      fireCreate({ layer: { on: vi.fn(), off: vi.fn() } });
+    });
+    act(() => {
+      fireCreate({ layer: { on: vi.fn(), off: vi.fn() } });
+    });
+    act(() => {
+      fireCreate({ layer: { on: vi.fn(), off: vi.fn() } });
+    });
+
+    expect(getByTestId('count').textContent).toBe('3');
+
+    // After three draws + three state updates, still exactly one pm:create
+    // registration on the map.
+    const finalPmCreateCalls = (map.on as ReturnType<typeof vi.fn>).mock.calls.filter(
+      ([eventName]) => eventName === 'pm:create'
+    );
+    expect(finalPmCreateCalls).toHaveLength(1);
   });
 
   it('forwards events to the latest handler via the ref-callback proxy', () => {
