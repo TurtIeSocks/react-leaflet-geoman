@@ -1,15 +1,19 @@
 import '@geoman-io/leaflet-geoman-free';
 import { useLeafletContext } from '@react-leaflet/core';
-import type { LayerGroup } from 'leaflet';
+import type { LayerGroup, PM, PathOptions } from 'leaflet';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { globalEvents, layerEvents, mapEvents, reference } from './events';
 import type { GeomanProps } from './types';
 
+const EMPTY_OPTIONS: PM.ToolbarOptions = {};
+const EMPTY_GLOBAL_OPTIONS: PM.GlobalOptions = {};
+const EMPTY_PATH_OPTIONS: PathOptions = {};
+
 export default function GeomanControls({
-  options = {},
-  globalOptions = {},
-  pathOptions = {},
+  options = EMPTY_OPTIONS,
+  globalOptions = EMPTY_GLOBAL_OPTIONS,
+  pathOptions = EMPTY_PATH_OPTIONS,
   lang = 'en',
   eventDebugFn,
   onMount,
