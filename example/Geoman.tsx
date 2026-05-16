@@ -20,11 +20,7 @@ export default function Geoman({ geojson, setGeojson }: Props) {
 
     L.geoJSON(geojson).eachLayer((layer) => {
       if (
-        !(
-          layer instanceof L.Polyline ||
-          layer instanceof L.Polygon ||
-          layer instanceof L.Marker
-        )
+        !(layer instanceof L.Polyline || layer instanceof L.Polygon || layer instanceof L.Marker)
       ) {
         return;
       }
