@@ -38,10 +38,15 @@ export default function GeomanControls({
   useLayoutEffect(() => {
     if (!container || !map?.pm) return;
 
-    if (!map.pm.controlsVisible()) {
+    // Only the instance that adds the toolbar owns its lifecycle. A second
+    // GeomanControls mounted on the same map registers its own event handlers
+    // but must not call onMount/onUnmount or addControls/removeControls,
+    // otherwise it would tear down the first instance's toolbar on unmount.
+    const ownsControls = !map.pm.controlsVisible();
+    if (ownsControls) {
       map.pm.addControls(options);
+      onMountRef.current?.();
     }
-    onMountRef.current?.();
 
     // Stable proxy: each Geoman event name forwards to the latest handler via
     // handlersRef, falling back to eventDebugFn. Registered once per setup;
@@ -72,14 +77,16 @@ export default function GeomanControls({
       globalEvents(map, proxy, 'off');
       mapEvents(map, proxy, 'off');
 
-      map.pm.disableDraw();
-      map.pm.disableGlobalEditMode();
-      map.pm.disableGlobalRemovalMode();
-      map.pm.disableGlobalDragMode();
-      map.pm.disableGlobalCutMode();
-      map.pm.disableGlobalRotateMode();
-      onUnmountRef.current?.();
-      map.pm.removeControls();
+      if (ownsControls) {
+        map.pm.disableDraw();
+        map.pm.disableGlobalEditMode();
+        map.pm.disableGlobalRemovalMode();
+        map.pm.disableGlobalDragMode();
+        map.pm.disableGlobalCutMode();
+        map.pm.disableGlobalRotateMode();
+        onUnmountRef.current?.();
+        map.pm.removeControls();
+      }
     };
   }, [container]);
 
