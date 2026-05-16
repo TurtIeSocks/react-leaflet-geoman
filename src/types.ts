@@ -1,4 +1,4 @@
-import type { PM, PathOptions } from 'leaflet';
+import type { PathOptions, PM } from 'leaflet';
 
 export type Method = 'on' | 'off';
 
