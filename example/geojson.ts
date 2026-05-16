@@ -1,4 +1,4 @@
-import type { FeatureCollection } from 'geojson'
+import type { FeatureCollection } from 'geojson';
 
 export const GEOJSON: FeatureCollection = {
   type: 'FeatureCollection',
@@ -100,4 +100,4 @@ export const GEOJSON: FeatureCollection = {
       },
     },
   ],
-}
+};

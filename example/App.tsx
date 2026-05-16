@@ -1,12 +1,12 @@
-import * as React from 'react'
-import { MapContainer, TileLayer } from 'react-leaflet'
-import type { FeatureCollection } from 'geojson'
+import type { FeatureCollection } from 'geojson';
+import * as React from 'react';
+import { MapContainer, TileLayer } from 'react-leaflet';
 
-import GeomanWrapper from './Geoman'
-import { GEOJSON } from './geojson'
+import GeomanWrapper from './Geoman';
+import { GEOJSON } from './geojson';
 
 export default function App() {
-  const [geojson, setGeojson] = React.useState<FeatureCollection>(GEOJSON)
+  const [geojson, setGeojson] = React.useState<FeatureCollection>(GEOJSON);
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
@@ -24,5 +24,5 @@ export default function App() {
         <pre>{JSON.stringify(geojson, null, 2)}</pre>
       </div>
     </div>
-  )
+  );
 }

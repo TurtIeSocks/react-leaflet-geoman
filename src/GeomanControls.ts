@@ -1,10 +1,10 @@
-import '@geoman-io/leaflet-geoman-free'
-import { useLayoutEffect, useEffect, useState } from 'react'
-import { useLeafletContext } from '@react-leaflet/core'
-import type { LayerGroup } from 'leaflet'
+import '@geoman-io/leaflet-geoman-free';
+import { useLeafletContext } from '@react-leaflet/core';
+import type { LayerGroup } from 'leaflet';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import type { GeomanProps } from './types'
-import { reference, layerEvents, globalEvents, mapEvents } from './events'
+import { globalEvents, layerEvents, mapEvents, reference } from './events';
+import type { GeomanProps } from './types';
 
 export default function GeomanControls({
   options = {},
@@ -16,83 +16,96 @@ export default function GeomanControls({
   onUnmount,
   ...handlers
 }: GeomanProps): null {
-  const [mounted, setMounted] = useState(false)
-  const [handlersRef, setHandlersRef] = useState<Record<string, Function>>(
-    process.env.NODE_ENV === 'development' ? handlers : {}
-  )
-  const { map, layerContainer } = useLeafletContext()
-  const container = (layerContainer as LayerGroup) || map
+  // All hooks must be called unconditionally before any early return.
+  const [mounted, setMounted] = useState(false);
+  const { map, layerContainer } = useLeafletContext();
+  const container = (layerContainer as LayerGroup) || map;
 
-  if (!container) {
-    console.warn('[GEOMAN-CONTROLS] No map or container instance found')
-    return null
+  // Store onMount/onUnmount in refs so the layout effect cleanup always
+  // calls the latest version without needing to re-run the effect.
+  const onMountRef = useRef(onMount);
+  const onUnmountRef = useRef(onUnmount);
+  onMountRef.current = onMount;
+  onUnmountRef.current = onUnmount;
+
+  // Track handler identity changes without triggering re-renders.
+  // handlerVersion increments whenever any handler reference changes,
+  // and is used as a stable dependency for the event-registration effect.
+  // This fixes a production bug where handlers never re-registered because
+  // the old dependency was always `true` in production builds.
+  const handlerVersion = useRef(0);
+  const prevHandlersRef = useRef<typeof handlers>({} as typeof handlers);
+  const handlersHaveChanged =
+    (Object.keys(handlers) as (keyof typeof handlers)[]).some(
+      (k) => prevHandlersRef.current[k] !== handlers[k]
+    ) ||
+    (Object.keys(prevHandlersRef.current) as (keyof typeof handlers)[]).some(
+      (k) => prevHandlersRef.current[k] !== handlers[k]
+    );
+  if (handlersHaveChanged) {
+    handlerVersion.current++;
+    prevHandlersRef.current = handlers;
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: options is intentionally read only at mount time (Leaflet controls are configured once)
   useLayoutEffect(() => {
-    // add controls
+    if (!container) return;
     if (!map.pm.controlsVisible()) {
-      map.pm.addControls(options)
-      if (onMount) onMount()
-      setMounted(true)
+      map.pm.addControls(options);
+      onMountRef.current?.();
+      setMounted(true);
     }
     return () => {
-      map.pm.disableDraw()
-      map.pm.disableGlobalEditMode()
-      map.pm.disableGlobalRemovalMode()
-      map.pm.disableGlobalDragMode()
-      map.pm.disableGlobalCutMode()
-      map.pm.disableGlobalRotateMode()
-      map.pm.disableGlobalDragMode()
-      map.pm.disableGlobalCutMode()
-      if (onUnmount) onUnmount()
-      map.pm.removeControls()
-      setMounted(false)
-    }
-  }, [])
+      map.pm.disableDraw();
+      map.pm.disableGlobalEditMode();
+      map.pm.disableGlobalRemovalMode();
+      map.pm.disableGlobalDragMode();
+      map.pm.disableGlobalCutMode();
+      map.pm.disableGlobalRotateMode();
+      onUnmountRef.current?.();
+      map.pm.removeControls();
+      setMounted(false);
+    };
+  }, [container]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: map.pm is a stable Leaflet instance property
   useEffect(() => {
-    // set path options
-    if (mounted) map.pm.setPathOptions(pathOptions)
-  }, [pathOptions, mounted])
+    if (!mounted || !container) return;
+    map.pm.setPathOptions(pathOptions);
+  }, [pathOptions, mounted, container]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: map.pm is a stable Leaflet instance property
   useEffect(() => {
-    // set global options
-    if (mounted)
-      map.pm.setGlobalOptions({ layerGroup: container, ...globalOptions })
-  }, [globalOptions, mounted])
+    if (!mounted || !container) return;
+    map.pm.setGlobalOptions({ layerGroup: container, ...globalOptions });
+  }, [globalOptions, mounted, container]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: map.pm is a stable Leaflet instance property
   useEffect(() => {
-    // set language
-    if (mounted) map.pm.setLang(lang)
-  }, [lang, mounted])
+    if (!mounted || !container) return;
+    map.pm.setLang(lang);
+  }, [lang, mounted, container]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: handlers are tracked via handlerVersion ref to avoid stale closure issues
   useEffect(() => {
-    // attach and remove event handlers
-    if (mounted) {
-      const withDebug = Object.fromEntries(
-        reference.map((handler) => [handler, handlers[handler] ?? eventDebugFn])
-      )
-      const layers = layerContainer
-        ? container.getLayers()
-        : map.pm.getGeomanLayers()
-      layers.forEach((layer) => layerEvents(layer, withDebug, 'on'))
+    if (!mounted || !container) return;
+    const withDebug = Object.fromEntries(
+      reference.map((handler) => [handler, handlers[handler] ?? eventDebugFn])
+    );
+    const layers = layerContainer ? container.getLayers() : map.pm.getGeomanLayers();
+    for (const layer of layers) layerEvents(layer, withDebug, 'on');
+    globalEvents(map, withDebug, 'on');
+    mapEvents(map, withDebug, 'on');
 
-      globalEvents(map, withDebug, 'on')
-      mapEvents(map, withDebug, 'on')
+    return () => {
+      globalEvents(map, withDebug, 'off');
+      mapEvents(map, withDebug, 'off');
+      for (const layer of layers) layerEvents(layer, withDebug, 'off');
+    };
+  }, [mounted, handlerVersion.current, container]);
 
-      return () => {
-        globalEvents(map, withDebug, 'off')
-        mapEvents(map, withDebug, 'off')
-        layers.forEach((layer) => layerEvents(layer, withDebug, 'off'))
-        setHandlersRef(handlers)
-      }
-    }
-  }, [
-    mounted,
-    process.env.NODE_ENV === 'development'
-      ? Object.entries(handlers).every(([k, fn]) => handlersRef[k] === fn)
-      : true,
-  ])
-
-  return null
+  if (!container) {
+    console.warn('[GEOMAN-CONTROLS] No map or container instance found');
+  }
+  return null;
 }

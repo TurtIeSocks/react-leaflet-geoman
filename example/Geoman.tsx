@@ -1,17 +1,17 @@
-import * as React from 'react'
-import { FeatureGroup } from 'react-leaflet'
-import type { FeatureCollection } from 'geojson'
-import * as L from 'leaflet'
+import type { FeatureCollection } from 'geojson';
+import * as L from 'leaflet';
+import * as React from 'react';
+import { FeatureGroup } from 'react-leaflet';
 
-import { GeomanControls } from '../src/index'
+import { GeomanControls } from '../src/index';
 
 interface Props {
-  geojson: FeatureCollection
-  setGeojson: (geojson: FeatureCollection) => void
+  geojson: FeatureCollection;
+  setGeojson: (geojson: FeatureCollection) => void;
 }
 
 export default function Geoman({ geojson, setGeojson }: Props) {
-  const ref = React.useRef<L.FeatureGroup>(null)
+  const ref = React.useRef<L.FeatureGroup>(null);
 
   React.useEffect(() => {
     if (ref.current?.getLayers().length === 0 && geojson) {
@@ -24,25 +24,25 @@ export default function Geoman({ geojson, setGeojson }: Props) {
           if (layer?.feature?.properties.radius && ref.current) {
             new L.Circle(layer.feature.geometry.coordinates.slice().reverse(), {
               radius: layer.feature?.properties.radius,
-            }).addTo(ref.current)
+            }).addTo(ref.current);
           } else {
-            ref.current?.addLayer(layer)
+            ref.current?.addLayer(layer);
           }
         }
-      })
+      });
     }
-  }, [geojson])
+  }, [geojson]);
 
   const handleChange = () => {
     const newGeo: FeatureCollection = {
       type: 'FeatureCollection',
       features: [],
-    }
-    const layers = ref.current?.getLayers()
+    };
+    const layers = ref.current?.getLayers();
     if (layers) {
-      layers.forEach((layer) => {
+      for (const layer of layers) {
         if (layer instanceof L.Circle || layer instanceof L.CircleMarker) {
-          const { lat, lng } = layer.getLatLng()
+          const { lat, lng } = layer.getLatLng();
           newGeo.features.push({
             type: 'Feature',
             properties: {
@@ -52,19 +52,19 @@ export default function Geoman({ geojson, setGeojson }: Props) {
               type: 'Point',
               coordinates: [lng, lat],
             },
-          })
+          });
         } else if (
           layer instanceof L.Marker ||
           layer instanceof L.Polygon ||
           layer instanceof L.Rectangle ||
           layer instanceof L.Polyline
         ) {
-          newGeo.features.push(layer.toGeoJSON())
+          newGeo.features.push(layer.toGeoJSON());
         }
-      })
+      }
     }
-    setGeojson(newGeo)
-  }
+    setGeojson(newGeo);
+  };
 
   return (
     <FeatureGroup ref={ref}>
@@ -90,5 +90,5 @@ export default function Geoman({ geojson, setGeojson }: Props) {
         onMarkerDragEnd={handleChange}
       />
     </FeatureGroup>
-  )
+  );
 }

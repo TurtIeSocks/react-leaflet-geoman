@@ -23,8 +23,27 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
+
       - name: Update npm
         run: npm install -g npm@latest
-      - run: yarn
-      - run: yarn build:ts
-      - run: npm publish
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Type check
+        run: yarn typecheck
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Test
+        run: yarn test
+
+      - name: Build declarations
+        run: yarn build:ts
+
+      - name: Build library
+        run: yarn build
+
+      - name: Publish to NPM
+        run: npm publish --provenance
