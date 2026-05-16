@@ -1,6 +1,6 @@
 import '@geoman-io/leaflet-geoman-free';
 import { useLeafletContext } from '@react-leaflet/core';
-import type { Layer, LayerGroup, PM, PathOptions } from 'leaflet';
+import type { Layer, LayerGroup, PathOptions, PM } from 'leaflet';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { globalEvents, layerEvents, mapEvents, reference } from './events';
