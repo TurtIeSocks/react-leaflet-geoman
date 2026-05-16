@@ -1,4 +1,4 @@
-import type { GeomanHandlers } from '../types'
+import type { GeomanHandlers } from '../types';
 
 export const reference = [
   'onMapRemove',
@@ -51,4 +51,4 @@ export const reference = [
   'onDragEnd',
   'onDragEnable',
   'onDragDisable',
-] as (keyof GeomanHandlers)[]
+] as (keyof GeomanHandlers)[];

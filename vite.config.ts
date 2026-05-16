@@ -1,17 +1,14 @@
-import { resolve } from 'path'
+import { resolve } from 'node:path';
 
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import checker from 'vite-plugin-checker'
-import typescript from '@rollup/plugin-typescript'
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import checker from 'vite-plugin-checker';
 
 export default defineConfig(({ mode }) => ({
   plugins:
     mode === 'development'
       ? [
-          react({
-            jsxRuntime: 'classic',
-          }),
+          react(),
           checker({
             overlay: {
               initialIsOpen: false,
@@ -23,31 +20,29 @@ export default defineConfig(({ mode }) => ({
         ]
       : [],
   build: {
-    target: ['safari11.1', 'chrome64', 'firefox66', 'edge88'],
     outDir: resolve(__dirname, './dist'),
     sourcemap: true,
     minify: false,
-    input:
-      mode === 'development'
-        ? { main: resolve(__dirname, 'index.html') }
-        : undefined,
     lib:
       mode === 'development'
         ? undefined
         : {
             name: 'react-leaflet-geoman',
             entry: 'src/index.ts',
-            fileName: 'index',
+            fileName: (format) => `index.${format === 'es' ? 'mjs' : 'js'}`,
+            formats: ['es', 'cjs'],
           },
     rollupOptions:
       mode === 'development'
-        ? {}
+        ? { input: { main: resolve(__dirname, 'index.html') } }
         : {
-            plugins: [typescript({ tsconfig: './tsconfig.build.json' })],
             external: [
               'react',
+              'react-dom',
+              'react/jsx-runtime',
               'leaflet',
               'react-leaflet',
+              '@react-leaflet/core',
               '@geoman-io/leaflet-geoman-free',
             ],
           },
@@ -62,4 +57,4 @@ export default defineConfig(({ mode }) => ({
       strict: false,
     },
   },
-}))
+}));

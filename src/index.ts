@@ -1,5 +1,5 @@
-import GeomanControls from "./GeomanControls"
+import GeomanControls from './GeomanControls';
 
-export * from "./types"
-export * from "./events"
-export { GeomanControls, GeomanControls as useGeomanControls }
+export * from './types';
+export * from './events';
+export { GeomanControls };

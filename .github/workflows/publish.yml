@@ -9,8 +9,13 @@ permissions:
   contents: read
 
 jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
   publish:
     name: Publish to NPM
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -23,8 +28,16 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
+          cache: yarn
+
       - name: Update npm
         run: npm install -g npm@latest
-      - run: yarn
-      - run: yarn build:ts
-      - run: npm publish
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build library and declarations
+        run: yarn build
+
+      - name: Publish to NPM
+        run: npm publish --provenance

@@ -28,21 +28,18 @@ Add React Leaflet Geoman
 
 ## Usage
 
-Since this package modifies the DOM directly, it can be imported either as hook or a component. At a minimum, it must be initiated inside of a `MapContainer` component. You can either draw shapes directly to the map container or wrap it in a `FeatureGroup` component. See the [Example](/example) code for a more detailed usage example.
+Import `GeomanControls` as a React component inside a `MapContainer`. You can either draw shapes directly onto the map container or wrap `GeomanControls` in a `FeatureGroup` so the drawn layers are scoped to that group. See the [Example](/example) code for a more detailed usage example.
 
 ## V2 Breaking Changes
 
 This component wrapper no longer imports the Leaflet Geoman CSS file. You must import it yourself, this is for compatibility reasons for different frameworks.
 
 ```tsx
-// as a React component
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
+import { FeatureGroup } from 'react-leaflet'
 import { GeomanControls } from 'react-leaflet-geoman-v2'
 
 export default function Drawing() {
-  const handleChange = () => {
-    console.log('Event fired!')
-  }
   return (
     <FeatureGroup>
       <GeomanControls
@@ -54,24 +51,11 @@ export default function Drawing() {
           continueDrawing: true,
           editable: false,
         }}
-        onCreate={handleChange}
+        onCreate={(e) => console.log('onCreate', e)}
         onChange={(e) => console.log('onChange', e)}
       />
     </FeatureGroup>
   )
-}
-
-// as a hook
-import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
-import { useGeomanControls } from 'react-leaflet-geoman-v2'
-
-export default function Drawing() {
-  useGeomanControls({
-    options: { drawText: true, drawCircle: true },
-    onCreate: (e) => console.log('onCreate', e),
-    eventDebugFn: console.log,
-  })
-  return null
 }
 ```
 
@@ -194,5 +178,9 @@ This library is only typed as well as the base plugin, if you see an issue, [ple
 
 ## Contributing
 
-- `yarn start` to start the Vite dev server with HMR enabled.
-- With VS Code you can open a debugger in Chrome for IDE debugging
+- `yarn start` — start the Vite dev server with HMR enabled.
+- `yarn test` — run the Vitest suite.
+- `yarn lint` — run Biome (lint + format check).
+- `yarn typecheck` — run `tsc --noEmit`.
+- `yarn build` — produce the publishable `dist/` (bundle + declarations).
+- With VS Code you can open a debugger in Chrome for IDE debugging.

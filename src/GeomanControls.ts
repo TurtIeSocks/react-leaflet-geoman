@@ -1,98 +1,112 @@
-import '@geoman-io/leaflet-geoman-free'
-import { useLayoutEffect, useEffect, useState } from 'react'
-import { useLeafletContext } from '@react-leaflet/core'
-import type { LayerGroup } from 'leaflet'
+import '@geoman-io/leaflet-geoman-free';
+import { useLeafletContext } from '@react-leaflet/core';
+import type { Layer, LayerGroup, PM, PathOptions } from 'leaflet';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
-import type { GeomanProps } from './types'
-import { reference, layerEvents, globalEvents, mapEvents } from './events'
+import { globalEvents, layerEvents, mapEvents, reference } from './events';
+import type { EventDebugFn, GeomanHandlers, GeomanProps, HandlersWithDebug } from './types';
+
+const EMPTY_OPTIONS: PM.ToolbarOptions = {};
+const EMPTY_GLOBAL_OPTIONS: PM.GlobalOptions = {};
+const EMPTY_PATH_OPTIONS: PathOptions = {};
 
 export default function GeomanControls({
-  options = {},
-  globalOptions = {},
-  pathOptions = {},
+  options = EMPTY_OPTIONS,
+  globalOptions = EMPTY_GLOBAL_OPTIONS,
+  pathOptions = EMPTY_PATH_OPTIONS,
   lang = 'en',
   eventDebugFn,
   onMount,
   onUnmount,
   ...handlers
 }: GeomanProps): null {
-  const [mounted, setMounted] = useState(false)
-  const [handlersRef, setHandlersRef] = useState<Record<string, Function>>(
-    process.env.NODE_ENV === 'development' ? handlers : {}
-  )
-  const { map, layerContainer } = useLeafletContext()
-  const container = (layerContainer as LayerGroup) || map
+  const { map, layerContainer } = useLeafletContext();
+  const container = (layerContainer as LayerGroup) || map;
 
-  if (!container) {
-    console.warn('[GEOMAN-CONTROLS] No map or container instance found')
-    return null
-  }
+  // Hold the latest props in refs so registered listeners always invoke the
+  // freshest user handler without needing to detach/re-attach on each change.
+  const handlersRef = useRef<GeomanHandlers>(handlers);
+  const eventDebugFnRef = useRef<EventDebugFn | undefined>(eventDebugFn);
+  const onMountRef = useRef(onMount);
+  const onUnmountRef = useRef(onUnmount);
+  handlersRef.current = handlers;
+  eventDebugFnRef.current = eventDebugFn;
+  onMountRef.current = onMount;
+  onUnmountRef.current = onUnmount;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: setup is keyed to container; prop updates flow through refs
   useLayoutEffect(() => {
-    // add controls
-    if (!map.pm.controlsVisible()) {
-      map.pm.addControls(options)
-      if (onMount) onMount()
-      setMounted(true)
+    if (!container || !map?.pm) {
+      if (!container) console.warn('[GEOMAN-CONTROLS] No map or container instance found');
+      return;
     }
+
+    // Only the instance that adds the toolbar owns its lifecycle. A second
+    // GeomanControls mounted on the same map registers its own event handlers
+    // but must not call onMount/onUnmount or addControls/removeControls,
+    // otherwise it would tear down the first instance's toolbar on unmount.
+    const ownsControls = !map.pm.controlsVisible();
+    if (ownsControls) {
+      map.pm.addControls(options);
+      onMountRef.current?.();
+    }
+
+    // Stable proxy: each Geoman event name forwards to the latest handler via
+    // handlersRef, falling back to eventDebugFn. Registered once per setup;
+    // never needs to detach/re-attach when user handlers change identity.
+    const proxy = Object.fromEntries(
+      reference.map((name) => [
+        name,
+        (e: unknown) => {
+          const handler = handlersRef.current[name] as ((arg: unknown) => void) | undefined;
+          if (handler) handler(e);
+          else eventDebugFnRef.current?.(e);
+        },
+      ])
+    ) as HandlersWithDebug;
+
+    const setupLayers = layerContainer ? container.getLayers() : map.pm.getGeomanLayers();
+    for (const layer of setupLayers) layerEvents(layer as Layer, proxy, 'on');
+    globalEvents(map, proxy, 'on');
+    mapEvents(map, proxy, 'on');
+
     return () => {
-      map.pm.disableDraw()
-      map.pm.disableGlobalEditMode()
-      map.pm.disableGlobalRemovalMode()
-      map.pm.disableGlobalDragMode()
-      map.pm.disableGlobalCutMode()
-      map.pm.disableGlobalRotateMode()
-      map.pm.disableGlobalDragMode()
-      map.pm.disableGlobalCutMode()
-      if (onUnmount) onUnmount()
-      map.pm.removeControls()
-      setMounted(false)
-    }
-  }, [])
+      if (!map?.pm) return;
 
-  useEffect(() => {
-    // set path options
-    if (mounted) map.pm.setPathOptions(pathOptions)
-  }, [pathOptions, mounted])
+      // Snapshot layers at teardown time so we also detach from any layer
+      // created after setup (e.g. drawn via pm:create wrapper).
+      const teardownLayers = layerContainer ? container.getLayers() : map.pm.getGeomanLayers();
+      for (const layer of teardownLayers) layerEvents(layer as Layer, proxy, 'off');
+      globalEvents(map, proxy, 'off');
+      mapEvents(map, proxy, 'off');
 
-  useEffect(() => {
-    // set global options
-    if (mounted)
-      map.pm.setGlobalOptions({ layerGroup: container, ...globalOptions })
-  }, [globalOptions, mounted])
-
-  useEffect(() => {
-    // set language
-    if (mounted) map.pm.setLang(lang)
-  }, [lang, mounted])
-
-  useEffect(() => {
-    // attach and remove event handlers
-    if (mounted) {
-      const withDebug = Object.fromEntries(
-        reference.map((handler) => [handler, handlers[handler] ?? eventDebugFn])
-      )
-      const layers = layerContainer
-        ? container.getLayers()
-        : map.pm.getGeomanLayers()
-      layers.forEach((layer) => layerEvents(layer, withDebug, 'on'))
-
-      globalEvents(map, withDebug, 'on')
-      mapEvents(map, withDebug, 'on')
-
-      return () => {
-        globalEvents(map, withDebug, 'off')
-        mapEvents(map, withDebug, 'off')
-        layers.forEach((layer) => layerEvents(layer, withDebug, 'off'))
-        setHandlersRef(handlers)
+      if (ownsControls) {
+        map.pm.disableDraw();
+        map.pm.disableGlobalEditMode();
+        map.pm.disableGlobalRemovalMode();
+        map.pm.disableGlobalDragMode();
+        map.pm.disableGlobalCutMode();
+        map.pm.disableGlobalRotateMode();
+        onUnmountRef.current?.();
+        map.pm.removeControls();
       }
-    }
-  }, [
-    mounted,
-    process.env.NODE_ENV === 'development'
-      ? Object.entries(handlers).every(([k, fn]) => handlersRef[k] === fn)
-      : true,
-  ])
+    };
+  }, [container]);
 
-  return null
+  useEffect(() => {
+    if (!container || !map?.pm) return;
+    map.pm.setPathOptions(pathOptions);
+  }, [pathOptions, container, map]);
+
+  useEffect(() => {
+    if (!container || !map?.pm) return;
+    map.pm.setGlobalOptions({ layerGroup: container, ...globalOptions });
+  }, [globalOptions, container, map]);
+
+  useEffect(() => {
+    if (!container || !map?.pm) return;
+    map.pm.setLang(lang);
+  }, [lang, container, map]);
+
+  return null;
 }
