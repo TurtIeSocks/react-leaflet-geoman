@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock @geoman-io/leaflet-geoman-free (side-effect import, no exports needed)
 vi.mock('@geoman-io/leaflet-geoman-free', () => ({}));
@@ -122,8 +122,8 @@ describe('GeomanControls', () => {
     const createCall = (map.on as ReturnType<typeof vi.fn>).mock.calls.find(
       ([eventName]) => eventName === 'pm:create'
     );
-    expect(createCall).toBeDefined();
-    const proxyCallback = createCall![1] as (e: unknown) => void;
+    if (!createCall) throw new Error('pm:create was not registered');
+    const proxyCallback = createCall[1] as (e: unknown) => void;
 
     // Initial render: first handler receives the event.
     const event1 = { layer: { on: vi.fn(), off: vi.fn() } };

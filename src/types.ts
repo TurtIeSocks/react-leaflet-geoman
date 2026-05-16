@@ -2,7 +2,7 @@ import type { PM, PathOptions } from 'leaflet';
 
 export type Method = 'on' | 'off';
 
-export type EventDebugFn = (input?: any) => void;
+export type EventDebugFn = (input?: unknown) => void;
 
 export interface HandlersWithDebug extends GeomanHandlers {
   eventDebugFn?: EventDebugFn;
