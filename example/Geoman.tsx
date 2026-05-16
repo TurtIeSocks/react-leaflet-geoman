@@ -40,7 +40,7 @@ export default function Geoman({ geojson, setGeojson }: Props) {
     });
   }, [geojson]);
 
-  const handleChange = () => {
+  const syncFeaturesToState = () => {
     const newGeo: FeatureCollection = {
       type: 'FeatureCollection',
       features: [],
@@ -87,14 +87,14 @@ export default function Geoman({ geojson, setGeojson }: Props) {
         // onMount={() => L.PM.setOptIn(true)}
         // onUnmount={() => L.PM.setOptIn(false)}
         eventDebugFn={console.log}
-        onCreate={handleChange}
-        onChange={handleChange}
-        onUpdate={handleChange}
-        onEdit={handleChange}
-        onMapRemove={handleChange}
-        onMapCut={handleChange}
-        onDragEnd={handleChange}
-        onMarkerDragEnd={handleChange}
+        onCreate={syncFeaturesToState}
+        onChange={syncFeaturesToState}
+        onUpdate={syncFeaturesToState}
+        onEdit={syncFeaturesToState}
+        onMapRemove={syncFeaturesToState}
+        onMapCut={syncFeaturesToState}
+        onDragEnd={syncFeaturesToState}
+        onMarkerDragEnd={syncFeaturesToState}
       />
     </FeatureGroup>
   );
