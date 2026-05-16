@@ -19,7 +19,7 @@ function makePm() {
     disableGlobalDragMode: vi.fn(),
     disableGlobalCutMode: vi.fn(),
     disableGlobalRotateMode: vi.fn(),
-    getGeomanLayers: vi.fn(() => []),
+    getGeomanLayers: vi.fn<() => unknown[]>(() => []),
     on: vi.fn(),
     off: vi.fn(),
   };
