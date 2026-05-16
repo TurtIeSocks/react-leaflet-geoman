@@ -112,19 +112,32 @@ describe('GeomanControls', () => {
     expect(pm.addControls).not.toHaveBeenCalled();
   });
 
-  it('re-registers event handlers when handler prop references change', async () => {
+  it('forwards events to the latest handler via the ref-callback proxy', () => {
     const handler1 = vi.fn();
     const handler2 = vi.fn();
 
     const { rerender } = render(<GeomanControls onCreate={handler1} />);
-    // Verify initial registration attempt occurred (map.on is called via globalEvents/mapEvents)
-    const initialOnCalls = (map.on as ReturnType<typeof vi.fn>).mock.calls.length;
 
-    // Pass a new handler reference — should trigger re-registration
+    // Find the proxy callback registered on the map for pm:create.
+    const createCall = (map.on as ReturnType<typeof vi.fn>).mock.calls.find(
+      ([eventName]) => eventName === 'pm:create'
+    );
+    expect(createCall).toBeDefined();
+    const proxyCallback = createCall![1] as (e: unknown) => void;
+
+    // Initial render: first handler receives the event.
+    const event1 = { layer: { on: vi.fn(), off: vi.fn() } };
+    proxyCallback(event1);
+    expect(handler1).toHaveBeenCalledTimes(1);
+    expect(handler2).not.toHaveBeenCalled();
+
+    // Re-render with new handler reference. No re-register occurs; the
+    // proxy reads the latest handler from the ref on next invocation.
     rerender(<GeomanControls onCreate={handler2} />);
-    const afterRerenderOnCalls = (map.on as ReturnType<typeof vi.fn>).mock.calls.length;
 
-    // Re-registration means new on() calls were made
-    expect(afterRerenderOnCalls).toBeGreaterThan(initialOnCalls);
+    const event2 = { layer: { on: vi.fn(), off: vi.fn() } };
+    proxyCallback(event2);
+    expect(handler1).toHaveBeenCalledTimes(1);
+    expect(handler2).toHaveBeenCalledTimes(1);
   });
 });
