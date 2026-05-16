@@ -12,25 +12,32 @@ interface Props {
 
 export default function Geoman({ geojson, setGeojson }: Props) {
   const ref = React.useRef<L.FeatureGroup>(null);
+  const hydratedRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (ref.current?.getLayers().length === 0 && geojson) {
-      L.geoJSON(geojson).eachLayer((layer) => {
-        if (
+    if (hydratedRef.current || !ref.current || !geojson) return;
+    hydratedRef.current = true;
+
+    L.geoJSON(geojson).eachLayer((layer) => {
+      if (
+        !(
           layer instanceof L.Polyline ||
           layer instanceof L.Polygon ||
           layer instanceof L.Marker
-        ) {
-          if (layer?.feature?.properties.radius && ref.current) {
-            new L.Circle(layer.feature.geometry.coordinates.slice().reverse(), {
-              radius: layer.feature?.properties.radius,
-            }).addTo(ref.current);
-          } else {
-            ref.current?.addLayer(layer);
-          }
-        }
-      });
-    }
+        )
+      ) {
+        return;
+      }
+
+      const feature = layer.feature;
+      const radius = feature?.properties?.radius;
+      if (radius && feature?.geometry.type === 'Point' && ref.current) {
+        const [lng, lat] = feature.geometry.coordinates;
+        new L.Circle([lat, lng], { radius }).addTo(ref.current);
+      } else {
+        ref.current?.addLayer(layer);
+      }
+    });
   }, [geojson]);
 
   const handleChange = () => {
