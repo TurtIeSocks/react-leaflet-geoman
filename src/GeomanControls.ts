@@ -36,7 +36,10 @@ export default function GeomanControls({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: setup is keyed to container; prop updates flow through refs
   useLayoutEffect(() => {
-    if (!container || !map?.pm) return;
+    if (!container || !map?.pm) {
+      if (!container) console.warn('[GEOMAN-CONTROLS] No map or container instance found');
+      return;
+    }
 
     // Only the instance that adds the toolbar owns its lifecycle. A second
     // GeomanControls mounted on the same map registers its own event handlers
