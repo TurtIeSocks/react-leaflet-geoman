@@ -19,7 +19,8 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "vite build",
+    "build": "vite build && tsc --project tsconfig.build.json",
+    "build:lib": "vite build",
     "build:ts": "tsc --project tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",

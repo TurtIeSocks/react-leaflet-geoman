@@ -39,10 +39,7 @@ jobs:
       - name: Test
         run: yarn test
 
-      - name: Build declarations
-        run: yarn build:ts
-
-      - name: Build library
+      - name: Build library and declarations
         run: yarn build
 
       - name: Publish to NPM
