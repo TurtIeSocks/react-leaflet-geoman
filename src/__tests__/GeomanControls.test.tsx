@@ -112,6 +112,61 @@ describe('GeomanControls', () => {
     expect(pm.addControls).not.toHaveBeenCalled();
   });
 
+  it('detaches event listeners from layers created after setup', () => {
+    // Initially no layers exist; after setup, simulate a layer being created
+    // via pm:create. On unmount, getGeomanLayers returns the new layer, and
+    // its off() should be called for every wired Geoman event.
+    const newLayer = {
+      on: vi.fn(),
+      off: vi.fn(),
+    };
+
+    const { unmount } = render(<GeomanControls onCreate={vi.fn()} />);
+
+    // Simulate Geoman reporting the freshly-drawn layer at teardown time.
+    pm.getGeomanLayers.mockReturnValue([newLayer as any]);
+
+    unmount();
+
+    // The teardown snapshot must hit the new layer at least once for
+    // a Geoman event (proves we use getGeomanLayers at cleanup, not the
+    // setup-time snapshot).
+    expect(newLayer.off).toHaveBeenCalled();
+  });
+
+  it('does not strip the toolbar when a second instance unmounts', () => {
+    // First instance mounts and "owns" the toolbar (controlsVisible: false → true).
+    render(<GeomanControls />);
+    expect(pm.addControls).toHaveBeenCalledTimes(1);
+
+    // Second instance sees controlsVisible: true → must not add or remove controls.
+    pm.controlsVisible.mockReturnValue(true);
+    const onMount = vi.fn();
+    const onUnmount = vi.fn();
+    const { unmount } = render(<GeomanControls onMount={onMount} onUnmount={onUnmount} />);
+
+    // addControls call count unchanged from the first mount.
+    expect(pm.addControls).toHaveBeenCalledTimes(1);
+    // onMount is gated on ownership, so it should not have fired for instance 2.
+    expect(onMount).not.toHaveBeenCalled();
+
+    unmount();
+
+    // removeControls + onUnmount must not have fired for the non-owner instance.
+    expect(pm.removeControls).not.toHaveBeenCalled();
+    expect(onUnmount).not.toHaveBeenCalled();
+  });
+
+  it('cleans up safely when map.pm has been torn down before unmount', () => {
+    const { unmount } = render(<GeomanControls />);
+
+    // Simulate the parent MapContainer destroying the map before this
+    // component unmounts.
+    (map as { pm: unknown }).pm = undefined;
+
+    expect(() => unmount()).not.toThrow();
+  });
+
   it('forwards events to the latest handler via the ref-callback proxy', () => {
     const handler1 = vi.fn();
     const handler2 = vi.fn();
