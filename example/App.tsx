@@ -13,7 +13,7 @@ export default function App() {
       <div style={{ width: '67%' }}>
         <MapContainer center={[40.777455, -73.969036]} zoom={15}>
           <TileLayer
-            attribution="Map data Â© <a href='https://www.openstreetmap.org'>OpenStreetMap</a> contributors"
+            attribution="Map data © <a href='https://www.openstreetmap.org'>OpenStreetMap</a> contributors"
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
           />
           <GeomanWrapper geojson={geojson} setGeojson={setGeojson} />
